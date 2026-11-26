@@ -1,184 +1,151 @@
-
 import { useState } from "react";
-import { Eye, EyeOff } from "lucide-react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 
 import AuthLayout from "@/components/auth/AuthLayout";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
+import FormField from "@/components/auth/FormField";
 import GoogleLoginButton from "@/components/auth/GoogleLoginButton";
+import PasswordField from "@/components/auth/PasswordField";
+import { Button } from "@/components/ui/button";
+import { parseApiError } from "@/services/apiError";
+import { login } from "@/services/authService";
+import { saveTokens } from "@/utils/tokenStorage";
+import { validateLogin } from "@/utils/authValidation";
+
+/**
+ * Auth Service hiện chưa map InvalidCredentials / AccountNotVerified / AccountLocked
+ * sang 401/403 nên các lỗi này có thể về 500. Hàm này xử lý cả hai trường hợp.
+ * TODO: rút gọn khi Backend trả đúng mã trạng thái.
+ */
+function getLoginErrorMessage({ status, message }) {
+  if (status === 0) return message;
+  if (status === 401) return "Email hoặc mật khẩu không đúng.";
+  if (status === 403 && message) return message;
+  if (status >= 500) {
+    return "Đăng nhập không thành công. Hãy kiểm tra email, mật khẩu và chắc chắn rằng bạn đã xác thực email.";
+  }
+  return message ?? "Đăng nhập không thành công. Vui lòng thử lại.";
+}
 
 export default function LoginPage() {
-    const [form, setForm] = useState({
-        email: "",
-        password: "",
-    });
+  const navigate = useNavigate();
 
-    const [showPassword, setShowPassword] = useState(false);
-    const [errors, setErrors] = useState({});
-    const [isSubmitting, setIsSubmitting] = useState(false);
+  const [form, setForm] = useState({ email: "", password: "", rememberMe: false });
+  const [errors, setErrors] = useState({});
+  const [formError, setFormError] = useState("");
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
-    function handleChange(event) {
-        const { name, value } = event.target;
+  function handleChange(event) {
+    const { name, value, type, checked } = event.target;
 
-        setForm((previous) => ({
-            ...previous,
-            [name]: value,
-        }));
+    setForm((previous) => ({
+      ...previous,
+      [name]: type === "checkbox" ? checked : value,
+    }));
+    setErrors((previous) => ({ ...previous, [name]: "" }));
+    setFormError("");
+  }
 
-        setErrors((previous) => ({
-            ...previous,
-            [name]: "",
-            form: "",
-        }));
+  async function handleSubmit(event) {
+    event.preventDefault();
+
+    const nextErrors = validateLogin(form);
+    setErrors(nextErrors);
+    if (Object.keys(nextErrors).length > 0) return;
+
+    setIsSubmitting(true);
+    setFormError("");
+
+    try {
+      const result = await login({
+        email: form.email.trim(),
+        password: form.password,
+        rememberMe: form.rememberMe,
+      });
+
+      saveTokens(result, form.rememberMe);
+      // TODO: /dashboard hiện là trang tạm; chưa có Protected Route.
+      navigate("/dashboard", { replace: true });
+    } catch (error) {
+      setFormError(getLoginErrorMessage(parseApiError(error)));
+    } finally {
+      setIsSubmitting(false);
     }
+  }
 
-    function validateForm() {
-        const nextErrors = {};
+  return (
+    <AuthLayout>
+      <h1 className="text-3xl font-extrabold sm:text-4xl">Chào mừng trở lại</h1>
+      <p className="mt-2 text-[15px] text-(--text)">
+        Đăng nhập để tiếp tục việc học của bạn.
+      </p>
 
-        if (!form.email.trim()) {
-            nextErrors.email = "Vui lòng nhập email.";
-        } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email)) {
-            nextErrors.email = "Email không đúng định dạng.";
-        }
+      <form onSubmit={handleSubmit} noValidate className="mt-8 space-y-5">
+        {formError && (
+          <div
+            role="alert"
+            className="rounded-xl bg-destructive/10 px-4 py-3 text-sm font-medium text-destructive"
+          >
+            {formError}
+          </div>
+        )}
 
-        if (!form.password) {
-            nextErrors.password = "Vui lòng nhập mật khẩu.";
-        }
+        <FormField
+          id="email"
+          name="email"
+          type="email"
+          label="Email"
+          placeholder="ban@example.com"
+          autoComplete="email"
+          value={form.email}
+          onChange={handleChange}
+          error={errors.email}
+        />
 
-        return nextErrors;
-    }
+        <PasswordField
+          id="password"
+          name="password"
+          label="Mật khẩu"
+          placeholder="Nhập mật khẩu"
+          autoComplete="current-password"
+          value={form.password}
+          onChange={handleChange}
+          error={errors.password}
+          labelExtra={
+            // TODO: Backend chưa có endpoint quên mật khẩu.
+            <span className="text-xs font-medium text-muted-foreground">
+              Quên mật khẩu? Sắp ra mắt
+            </span>
+          }
+        />
 
-    async function handleSubmit(event) {
-        event.preventDefault();
+        <label className="flex cursor-pointer items-center gap-2.5 text-sm font-medium text-(--text)">
+          <input
+            type="checkbox"
+            name="rememberMe"
+            checked={form.rememberMe}
+            onChange={handleChange}
+            className="size-4 rounded accent-primary"
+          />
+          Ghi nhớ đăng nhập
+        </label>
 
-        const nextErrors = validateForm();
-        setErrors(nextErrors);
-
-        if (Object.keys(nextErrors).length > 0) {
-            return;
-        }
-
-        // Tạm thời chỉ kiểm tra form.
-        // Bước tiếp theo sẽ gọi Auth Service tại đây.
-        setIsSubmitting(true);
-
-        try {
-            console.log("Login form:", {
-                email: form.email.trim(),
-                password: form.password,
-            });
-
-            setErrors({
-                form: "Form hợp lệ. Chưa kết nối API đăng nhập.",
-            });
-        } finally {
-            setIsSubmitting(false);
-        }
-    }
-
-    return (
-        <AuthLayout
-            title="Chào mừng trở lại!"
-            description="Đăng nhập để tiếp tục hành trình học tiếng Anh của bạn."
-            footer={
-                <>
-                    Chưa có tài khoản?{" "}
-                    <Link
-                        to="/register"
-                        className="font-semibold text-blue-600 hover:text-blue-700"
-                    >
-                        Đăng ký ngay
-                    </Link>
-                </>
-            }
+        <Button
+          type="submit"
+          disabled={isSubmitting}
+          className="h-12 w-full rounded-lg text-[15px] font-bold hover:bg-(--primary-hover)"
         >
-            <form onSubmit={handleSubmit} noValidate className="space-y-5">
-                <div className="space-y-2">
-                    <label htmlFor="email" className="text-sm font-medium text-slate-700">
-                        Email
-                    </label>
+          {isSubmitting ? "Đang đăng nhập..." : "Đăng nhập"}
+        </Button>
+      </form>
 
-                    <Input
-                        id="email"
-                        name="email"
-                        type="email"
-                        autoComplete="email"
-                        placeholder="you@example.com"
-                        value={form.email}
-                        onChange={handleChange}
-                        aria-invalid={Boolean(errors.email)}
-                        className="h-11"
-                    />
+      <GoogleLoginButton />
 
-                    {errors.email && (
-                        <p className="text-sm text-red-600">{errors.email}</p>
-                    )}
-                </div>
-
-                <div className="space-y-2">
-                    <div className="flex items-center justify-between gap-3">
-                        <label
-                            htmlFor="password"
-                            className="text-sm font-medium text-slate-700"
-                        >
-                            Mật khẩu
-                        </label>
-
-                        <button
-                            type="button"
-                            className="text-sm font-medium text-blue-600 hover:text-blue-700"
-                            onClick={() => {
-                                // Chưa triển khai luồng quên mật khẩu.
-                                setErrors({
-                                    form: "Chức năng quên mật khẩu sẽ được bổ sung sau.",
-                                });
-                            }}
-                        >
-                            Quên mật khẩu?
-                        </button>
-                    </div>
-
-                    <div className="relative">
-                        <Input
-                            id="password"
-                            name="password"
-                            type={showPassword ? "text" : "password"}
-                            autoComplete="current-password"
-                            placeholder="Nhập mật khẩu"
-                            value={form.password}
-                            onChange={handleChange}
-                            aria-invalid={Boolean(errors.password)}
-                            className="h-11 pr-11"
-                        />
-
-                        <button
-                            type="button"
-                            aria-label={showPassword ? "Ẩn mật khẩu" : "Hiện mật khẩu"}
-                            onClick={() => setShowPassword((previous) => !previous)}
-                            className="absolute inset-y-0 right-0 flex w-11 items-center justify-center text-slate-500 hover:text-slate-800"
-                        >
-                            {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
-                        </button>
-                    </div>
-
-                    {errors.password && (
-                        <p className="text-sm text-red-600">{errors.password}</p>
-                    )}
-                </div>
-
-                {errors.form && (
-                    <p role="status" className="text-sm text-blue-700">
-                        {errors.form}
-                    </p>
-                )}
-
-                <Button type="submit" className="h-11 w-full" disabled={isSubmitting}>
-                    {isSubmitting ? "Đang xử lý..." : "Đăng nhập"}
-                </Button>
-            </form>
-
-            <GoogleLoginButton />
-        </AuthLayout>
-    );
+      <p className="mt-8 text-center text-sm text-(--text)">
+        Chưa có tài khoản?{" "}
+        <Link to="/register" className="font-bold text-primary hover:underline">
+          Đăng ký ngay
+        </Link>
+      </p>
+    </AuthLayout>
+  );
 }

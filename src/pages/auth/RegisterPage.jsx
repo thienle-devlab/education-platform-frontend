@@ -1,263 +1,182 @@
-
 import { useState } from "react";
-import { Eye, EyeOff } from "lucide-react";
 import { Link } from "react-router-dom";
 
 import AuthLayout from "@/components/auth/AuthLayout";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
+import FormField from "@/components/auth/FormField";
 import GoogleLoginButton from "@/components/auth/GoogleLoginButton";
+import PasswordField from "@/components/auth/PasswordField";
+import PasswordRequirements from "@/components/auth/PasswordRequirements";
+import VerifyEmailNotice from "@/components/auth/VerifyEmailNotice";
+import { Button } from "@/components/ui/button";
+import { parseApiError } from "@/services/apiError";
+import { register } from "@/services/authService";
+import { validateRegister } from "@/utils/authValidation";
+
+const INITIAL_FORM = {
+  fullName: "",
+  phoneNumber: "",
+  email: "",
+  password: "",
+  confirmPassword: "",
+};
 
 export default function RegisterPage() {
-    const [form, setForm] = useState({
-        fullName: "",
-        email: "",
-        password: "",
-        confirmPassword: "",
-    });
+  const [form, setForm] = useState(INITIAL_FORM);
+  const [errors, setErrors] = useState({});
+  const [formError, setFormError] = useState("");
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [registeredEmail, setRegisteredEmail] = useState("");
 
-    const [showPassword, setShowPassword] = useState(false);
-    const [showConfirmPassword, setShowConfirmPassword] = useState(false);
-    const [errors, setErrors] = useState({});
-    const [isSubmitting, setIsSubmitting] = useState(false);
+  function handleChange(event) {
+    const { name, value } = event.target;
 
-    function handleChange(event) {
-        const { name, value } = event.target;
+    setForm((previous) => ({ ...previous, [name]: value }));
+    setErrors((previous) => ({ ...previous, [name]: "" }));
+    setFormError("");
+  }
 
-        setForm((previous) => ({
-            ...previous,
-            [name]: value,
-        }));
-
-        setErrors((previous) => ({
-            ...previous,
-            [name]: "",
-            confirmPassword: name === "password" ? "" : previous.confirmPassword,
-            form: "",
-        }));
+  function applyServerError({ status, code, message, fieldErrors }) {
+    if (Object.keys(fieldErrors).length > 0) {
+      setErrors(fieldErrors);
+    } else if (status === 409) {
+      setErrors({ email: "Email này đã được đăng ký." });
+    } else if (code === "PASSWORD_MISMATCH") {
+      setErrors({ confirmPassword: "Mật khẩu xác nhận không khớp." });
+    } else {
+      setFormError(message ?? "Đăng ký không thành công. Vui lòng thử lại.");
     }
+  }
 
-    function validateForm() {
-        const nextErrors = {};
+  async function handleSubmit(event) {
+    event.preventDefault();
 
-        if (!form.fullName.trim()) {
-            nextErrors.fullName = "Vui lòng nhập họ và tên.";
-        }
+    const nextErrors = validateRegister(form);
+    setErrors(nextErrors);
+    if (Object.keys(nextErrors).length > 0) return;
 
-        if (!form.email.trim()) {
-            nextErrors.email = "Vui lòng nhập email.";
-        } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email)) {
-            nextErrors.email = "Email không đúng định dạng.";
-        }
+    setIsSubmitting(true);
+    setFormError("");
 
-        if (!form.password) {
-            nextErrors.password = "Vui lòng nhập mật khẩu.";
-        } else if (form.password.length < 8) {
-            nextErrors.password = "Mật khẩu cần có ít nhất 8 ký tự.";
-        }
+    try {
+      const result = await register({
+        fullName: form.fullName.trim(),
+        phoneNumber: form.phoneNumber.trim(),
+        email: form.email.trim(),
+        password: form.password,
+        confirmPassword: form.confirmPassword,
+      });
 
-        if (!form.confirmPassword) {
-            nextErrors.confirmPassword = "Vui lòng xác nhận mật khẩu.";
-        } else if (form.password !== form.confirmPassword) {
-            nextErrors.confirmPassword = "Mật khẩu xác nhận không khớp.";
-        }
-
-        return nextErrors;
+      setRegisteredEmail(result?.email ?? form.email.trim());
+    } catch (error) {
+      applyServerError(parseApiError(error));
+    } finally {
+      setIsSubmitting(false);
     }
+  }
 
-    async function handleSubmit(event) {
-        event.preventDefault();
-
-        const nextErrors = validateForm();
-        setErrors(nextErrors);
-
-        if (Object.keys(nextErrors).length > 0) {
-            return;
-        }
-
-        // Tạm thời chỉ kiểm tra form.
-        // Bước tiếp theo sẽ gọi Auth Service tại đây.
-        setIsSubmitting(true);
-
-        try {
-            console.log("Register form:", {
-                fullName: form.fullName.trim(),
-                email: form.email.trim(),
-                password: form.password,
-            });
-
-            setErrors({
-                form: "Form hợp lệ. Chưa kết nối API đăng ký.",
-            });
-        } finally {
-            setIsSubmitting(false);
-        }
-    }
-
+  if (registeredEmail) {
     return (
-        <AuthLayout
-            title="Tạo tài khoản"
-            description="Đăng ký để bắt đầu xây dựng lộ trình học tiếng Anh của riêng bạn."
-            footer={
-                <>
-                    Đã có tài khoản?{" "}
-                    <Link
-                        to="/login"
-                        className="font-semibold text-blue-600 hover:text-blue-700"
-                    >
-                        Đăng nhập
-                    </Link>
-                </>
-            }
-        >
-            <form onSubmit={handleSubmit} noValidate className="space-y-4">
-                <div className="space-y-2">
-                    <label
-                        htmlFor="fullName"
-                        className="text-sm font-medium text-slate-700"
-                    >
-                        Họ và tên
-                    </label>
-
-                    <Input
-                        id="fullName"
-                        name="fullName"
-                        type="text"
-                        autoComplete="name"
-                        placeholder="Nguyễn Văn A"
-                        value={form.fullName}
-                        onChange={handleChange}
-                        aria-invalid={Boolean(errors.fullName)}
-                        className="h-11"
-                    />
-
-                    {errors.fullName && (
-                        <p className="text-sm text-red-600">{errors.fullName}</p>
-                    )}
-                </div>
-
-                <div className="space-y-2">
-                    <label htmlFor="email" className="text-sm font-medium text-slate-700">
-                        Email
-                    </label>
-
-                    <Input
-                        id="email"
-                        name="email"
-                        type="email"
-                        autoComplete="email"
-                        placeholder="you@example.com"
-                        value={form.email}
-                        onChange={handleChange}
-                        aria-invalid={Boolean(errors.email)}
-                        className="h-11"
-                    />
-
-                    {errors.email && (
-                        <p className="text-sm text-red-600">{errors.email}</p>
-                    )}
-                </div>
-
-                <div className="space-y-2">
-                    <label
-                        htmlFor="password"
-                        className="text-sm font-medium text-slate-700"
-                    >
-                        Mật khẩu
-                    </label>
-
-                    <div className="relative">
-                        <Input
-                            id="password"
-                            name="password"
-                            type={showPassword ? "text" : "password"}
-                            autoComplete="new-password"
-                            placeholder="Tối thiểu 8 ký tự"
-                            value={form.password}
-                            onChange={handleChange}
-                            aria-invalid={Boolean(errors.password)}
-                            className="h-11 pr-11"
-                        />
-
-                        <button
-                            type="button"
-                            aria-label={showPassword ? "Ẩn mật khẩu" : "Hiện mật khẩu"}
-                            onClick={() => setShowPassword((previous) => !previous)}
-                            className="absolute inset-y-0 right-0 flex w-11 items-center justify-center text-slate-500 hover:text-slate-800"
-                        >
-                            {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
-                        </button>
-                    </div>
-
-                    {errors.password && (
-                        <p className="text-sm text-red-600">{errors.password}</p>
-                    )}
-                </div>
-
-                <div className="space-y-2">
-                    <label
-                        htmlFor="confirmPassword"
-                        className="text-sm font-medium text-slate-700"
-                    >
-                        Xác nhận mật khẩu
-                    </label>
-
-                    <div className="relative">
-                        <Input
-                            id="confirmPassword"
-                            name="confirmPassword"
-                            type={showConfirmPassword ? "text" : "password"}
-                            autoComplete="new-password"
-                            placeholder="Nhập lại mật khẩu"
-                            value={form.confirmPassword}
-                            onChange={handleChange}
-                            aria-invalid={Boolean(errors.confirmPassword)}
-                            className="h-11 pr-11"
-                        />
-
-                        <button
-                            type="button"
-                            aria-label={
-                                showConfirmPassword ? "Ẩn mật khẩu" : "Hiện mật khẩu"
-                            }
-                            onClick={() =>
-                                setShowConfirmPassword((previous) => !previous)
-                            }
-                            className="absolute inset-y-0 right-0 flex w-11 items-center justify-center text-slate-500 hover:text-slate-800"
-                        >
-                            {showConfirmPassword ? (
-                                <EyeOff size={18} />
-                            ) : (
-                                <Eye size={18} />
-                            )}
-                        </button>
-                    </div>
-
-                    {errors.confirmPassword && (
-                        <p className="text-sm text-red-600">
-                            {errors.confirmPassword}
-                        </p>
-                    )}
-                </div>
-
-                {errors.form && (
-                    <p role="status" className="text-sm text-blue-700">
-                        {errors.form}
-                    </p>
-                )}
-
-                <Button type="submit" className="h-11 w-full" disabled={isSubmitting}>
-                    {isSubmitting ? "Đang xử lý..." : "Tạo tài khoản"}
-                </Button>
-            </form>
-
-            <GoogleLoginButton />
-
-
-            <p className="mt-5 text-center text-xs leading-5 text-slate-500">
-                Bằng việc đăng ký, bạn đồng ý tuân thủ các điều khoản sử dụng của
-                nền tảng.
-            </p>
-        </AuthLayout>
+      <AuthLayout>
+        <VerifyEmailNotice email={registeredEmail} />
+      </AuthLayout>
     );
+  }
+
+  return (
+    <AuthLayout>
+      <h1 className="text-3xl font-extrabold sm:text-4xl">Tạo tài khoản</h1>
+      <p className="mt-2 text-[15px] text-(--text)">
+        Bắt đầu hành trình học tiếng Anh cùng 4Q.
+      </p>
+
+      <form onSubmit={handleSubmit} noValidate className="mt-8 space-y-5">
+        {formError && (
+          <div
+            role="alert"
+            className="rounded-xl bg-destructive/10 px-4 py-3 text-sm font-medium text-destructive"
+          >
+            {formError}
+          </div>
+        )}
+
+        <FormField
+          id="fullName"
+          name="fullName"
+          label="Họ và tên"
+          placeholder="Nguyễn Văn A"
+          autoComplete="name"
+          value={form.fullName}
+          onChange={handleChange}
+          error={errors.fullName}
+        />
+
+        <div className="grid gap-5 sm:grid-cols-2">
+          <FormField
+            id="phoneNumber"
+            name="phoneNumber"
+            type="tel"
+            inputMode="tel"
+            label="Số điện thoại"
+            placeholder="0901234567"
+            autoComplete="tel"
+            value={form.phoneNumber}
+            onChange={handleChange}
+            error={errors.phoneNumber}
+          />
+          <FormField
+            id="email"
+            name="email"
+            type="email"
+            label="Email"
+            placeholder="ban@example.com"
+            autoComplete="email"
+            value={form.email}
+            onChange={handleChange}
+            error={errors.email}
+          />
+        </div>
+
+        <PasswordField
+          id="password"
+          name="password"
+          label="Mật khẩu"
+          placeholder="Tạo mật khẩu"
+          autoComplete="new-password"
+          value={form.password}
+          onChange={handleChange}
+          error={errors.password}
+        />
+
+        <PasswordRequirements password={form.password} />
+
+        <PasswordField
+          id="confirmPassword"
+          name="confirmPassword"
+          label="Xác nhận mật khẩu"
+          placeholder="Nhập lại mật khẩu"
+          autoComplete="new-password"
+          value={form.confirmPassword}
+          onChange={handleChange}
+          error={errors.confirmPassword}
+        />
+
+        <Button
+          type="submit"
+          disabled={isSubmitting}
+          className="h-12 w-full rounded-lg text-[15px] font-bold hover:bg-(--primary-hover)"
+        >
+          {isSubmitting ? "Đang tạo tài khoản..." : "Đăng ký"}
+        </Button>
+      </form>
+
+      <GoogleLoginButton />
+
+      <p className="mt-8 text-center text-sm text-(--text)">
+        Đã có tài khoản?{" "}
+        <Link to="/login" className="font-bold text-primary hover:underline">
+          Đăng nhập
+        </Link>
+      </p>
+    </AuthLayout>
+  );
 }

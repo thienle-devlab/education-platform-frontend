@@ -1,4 +1,3 @@
-
 import { Link } from "react-router-dom";
 import {
     ArrowRight,
@@ -51,28 +50,28 @@ const learningPaths = [
         icon: Headphones,
         title: "Listening",
         subtitle: "Luyện nghe tiếng Anh",
-        color: "bg-sky-50 text-sky-700",
-        to: "/courses",
+        color: "bg-chart-3/10 text-chart-3",
+        to: "/courses?skill=LISTENING",
     },
     {
         icon: NotebookPen,
         title: "Reading",
         subtitle: "Nâng cao kỹ năng đọc",
-        color: "bg-violet-50 text-violet-700",
-        to: "/courses",
+        color: "bg-primary/10 text-primary",
+        to: "/courses?skill=READING",
     },
     {
         icon: MessageCircle,
         title: "Speaking",
         subtitle: "Tự tin giao tiếp",
-        color: "bg-emerald-50 text-emerald-700",
-        to: "/courses",
+        color: "bg-success/10 text-success",
+        to: "/courses?skill=SPEAKING",
     },
     {
         icon: Target,
         title: "TOEIC Practice",
         subtitle: "Ôn luyện theo định dạng TOEIC",
-        color: "bg-orange-50 text-orange-700",
+        color: "bg-chart-5/10 text-chart-5",
         to: "/assessment",
     },
 ];
@@ -84,19 +83,19 @@ export default function HomePage() {
             <section className="overflow-hidden">
                 <div className="mx-auto grid max-w-7xl items-center gap-12 px-4 py-16 sm:px-6 sm:py-20 lg:grid-cols-2 lg:px-8 lg:py-28">
                     <div>
-                        <div className="mb-6 inline-flex items-center gap-2 rounded-full border border-blue-100 bg-blue-50 px-3 py-1.5 text-sm font-medium text-blue-700">
+                        <div className="mb-6 inline-flex items-center gap-2 rounded-full border border-primary/15 bg-primary/10 px-3 py-1.5 text-sm font-semibold text-primary">
                             <Brain size={16} />
                             Học tập theo lộ trình của riêng bạn
                         </div>
 
-                        <h1 className="text-4xl font-bold tracking-tight text-foreground sm:text-5xl lg:text-6xl">
+                        <h1 className="text-4xl font-extrabold tracking-tight text-foreground sm:text-5xl lg:text-6xl">
                             Chinh phục tiếng Anh,
                             <span className="block text-primary">
                                 từng bước mỗi ngày.
                             </span>
                         </h1>
 
-                        <p className="mt-6 max-w-xl text-base leading-8 text-slate-600 sm:text-lg">
+                        <p className="mt-6 max-w-xl text-base leading-8 text-(--text) sm:text-lg">
                             Học tiếng Anh có định hướng, luyện tập theo kỹ năng và theo dõi
                             tiến độ để từng bước đạt được mục tiêu của bạn.
                         </p>
@@ -104,7 +103,7 @@ export default function HomePage() {
                         <div className="mt-8 flex flex-col gap-3 sm:flex-row">
                             <Link
                                 to="/courses"
-                                className="inline-flex h-11 items-center justify-center rounded-md bg-primary px-6 text-sm font-medium text-primary-foreground shadow-sm transition-colors hover:bg-blue-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+                                className="inline-flex h-12 items-center justify-center rounded-lg bg-primary px-6 text-[15px] font-bold text-primary-foreground shadow-sm transition-colors hover:bg-(--primary-hover) focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
                             >
                                 Khám phá khóa học
                                 <ArrowRight className="ml-2" size={18} />
@@ -112,20 +111,20 @@ export default function HomePage() {
 
                             <Link
                                 to="/assessment"
-                                className="inline-flex h-11 items-center justify-center rounded-md border border-border bg-background px-6 text-sm font-medium text-foreground shadow-sm transition-colors hover:bg-slate-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+                                className="inline-flex h-12 items-center justify-center rounded-lg border-2 border-border bg-card px-6 text-[15px] font-bold text-foreground transition-colors hover:bg-secondary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
                             >
                                 Thử sức với bài thi
                                 <ArrowRight className="ml-2" size={18} />
                             </Link>
                         </div>
 
-                        <div className="mt-8 flex flex-wrap gap-x-6 gap-y-3 text-sm text-slate-500">
+                        <div className="mt-8 flex flex-wrap gap-x-6 gap-y-3 text-sm text-muted-foreground">
                             <span className="flex items-center gap-2">
-                                <BookOpen size={17} className="text-blue-600" />
+                                <BookOpen size={17} className="text-primary" />
                                 Học theo kỹ năng
                             </span>
                             <span className="flex items-center gap-2">
-                                <ChartNoAxesCombined size={17} className="text-blue-600" />
+                                <ChartNoAxesCombined size={17} className="text-primary" />
                                 Theo dõi tiến độ
                             </span>
                         </div>
@@ -133,10 +132,10 @@ export default function HomePage() {
 
                     {/* Hero visual */}
                     <div className="relative mx-auto w-full max-w-xl">
-                        <div className="absolute -left-5 top-10 h-32 w-32 rounded-full bg-blue-200/50 blur-3xl" />
-                        <div className="absolute -right-5 bottom-5 h-40 w-40 rounded-full bg-violet-200/50 blur-3xl" />
+                        <div className="absolute -left-5 top-10 h-32 w-32 rounded-full bg-primary/20 blur-3xl" />
+                        <div className="absolute -right-5 bottom-5 h-40 w-40 rounded-full bg-chart-5/20 blur-3xl" />
 
-                        <Card className="relative border-slate-200/80 shadow-xl shadow-blue-900/5">
+                        <Card className="relative border-border shadow-xl shadow-foreground/5">
                             <CardHeader>
                                 <div className="flex items-center justify-between gap-4">
                                     <div>
@@ -145,51 +144,51 @@ export default function HomePage() {
                                             Hành trình của bạn
                                         </CardTitle>
                                     </div>
-                                    <div className="rounded-xl bg-blue-50 p-3 text-blue-600">
+                                    <div className="rounded-xl bg-primary/10 p-3 text-primary">
                                         <ChartNoAxesCombined size={24} />
                                     </div>
                                 </div>
                             </CardHeader>
 
                             <CardContent className="space-y-5">
-                                <div className="rounded-xl bg-slate-50 p-4">
+                                <div className="rounded-xl bg-secondary p-4">
                                     <div className="flex items-center justify-between gap-3">
                                         <div>
-                                            <p className="text-sm text-slate-500">
+                                            <p className="text-sm text-muted-foreground">
                                                 Mục tiêu học tập
                                             </p>
-                                            <p className="mt-1 font-semibold text-slate-900">
+                                            <p className="mt-1 font-semibold text-foreground">
                                                 Tiến bộ mỗi ngày
                                             </p>
                                         </div>
-                                        <div className="rounded-full bg-emerald-100 p-2 text-emerald-700">
+                                        <div className="rounded-full bg-success/10 p-2 text-success">
                                             <Target size={20} />
                                         </div>
                                     </div>
-                                    <div className="mt-4 h-2 overflow-hidden rounded-full bg-slate-200">
-                                        <div className="h-full w-3/5 rounded-full bg-blue-600" />
+                                    <div className="mt-4 h-2 overflow-hidden rounded-full bg-border">
+                                        <div className="h-full w-3/5 rounded-full bg-primary" />
                                     </div>
-                                    <p className="mt-2 text-xs text-slate-500">
+                                    <p className="mt-2 text-xs text-muted-foreground">
                                         Minh họa giao diện theo dõi học tập
                                     </p>
                                 </div>
 
                                 <div className="grid grid-cols-2 gap-3">
-                                    <div className="rounded-xl border border-slate-200 p-4">
-                                        <Headphones className="text-blue-600" size={22} />
-                                        <p className="mt-3 text-sm font-semibold text-slate-900">
+                                    <div className="rounded-xl border border-border p-4">
+                                        <Headphones className="text-primary" size={22} />
+                                        <p className="mt-3 text-sm font-semibold text-foreground">
                                             Listening
                                         </p>
-                                        <p className="mt-1 text-xs text-slate-500">
+                                        <p className="mt-1 text-xs text-muted-foreground">
                                             Luyện nghe
                                         </p>
                                     </div>
-                                    <div className="rounded-xl border border-slate-200 p-4">
-                                        <NotebookPen className="text-violet-600" size={22} />
-                                        <p className="mt-3 text-sm font-semibold text-slate-900">
+                                    <div className="rounded-xl border border-border p-4">
+                                        <NotebookPen className="text-chart-5" size={22} />
+                                        <p className="mt-3 text-sm font-semibold text-foreground">
                                             Reading
                                         </p>
-                                        <p className="mt-1 text-xs text-slate-500">
+                                        <p className="mt-1 text-xs text-muted-foreground">
                                             Luyện đọc
                                         </p>
                                     </div>
@@ -201,16 +200,16 @@ export default function HomePage() {
             </section>
 
             {/* Learning paths */}
-            <section className="border-y border-slate-200 bg-white py-16 sm:py-20">
+            <section className="border-y border-border bg-card py-16 sm:py-20">
                 <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
                     <div className="max-w-2xl">
-                        <p className="text-sm font-semibold uppercase tracking-wider text-blue-600">
+                        <p className="text-sm font-semibold uppercase tracking-wider text-primary">
                             Learning paths
                         </p>
-                        <h2 className="mt-3 text-3xl font-bold tracking-tight text-slate-900 sm:text-4xl">
+                        <h2 className="mt-3 text-3xl font-extrabold tracking-tight text-foreground sm:text-4xl">
                             Chọn kỹ năng bạn muốn cải thiện
                         </h2>
-                        <p className="mt-4 leading-7 text-slate-600">
+                        <p className="mt-4 leading-7 text-(--text)">
                             Bắt đầu từ mục tiêu của bạn và xây dựng thói quen học tập phù hợp.
                         </p>
                     </div>
@@ -230,13 +229,16 @@ export default function HomePage() {
                                         >
                                             <Icon size={24} />
                                         </div>
-                                        <h3 className="mt-5 font-semibold text-slate-900">
+                                        <h3 className="mt-5 font-semibold text-foreground">
                                             {path.title}
                                         </h3>
-                                        <p className="mt-2 text-sm leading-6 text-slate-500">
+                                        <p className="mt-2 text-sm leading-6 text-muted-foreground">
                                             {path.subtitle}
                                         </p>
-                                        <Link to={path.to}>
+                                        <Link
+                                            to={path.to}
+                                            className="mt-4 inline-flex items-center gap-1.5 text-sm font-bold text-primary hover:underline"
+                                        >
                                             Khám phá
                                             <ArrowRight size={16} />
                                         </Link>
@@ -252,13 +254,13 @@ export default function HomePage() {
             <section className="py-16 sm:py-20">
                 <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
                     <div className="mx-auto max-w-2xl text-center">
-                        <p className="text-sm font-semibold uppercase tracking-wider text-blue-600">
-                            Why EduPlatform?
+                        <p className="text-sm font-semibold uppercase tracking-wider text-primary">
+                            Why 4Q?
                         </p>
-                        <h2 className="mt-3 text-3xl font-bold tracking-tight text-slate-900 sm:text-4xl">
+                        <h2 className="mt-3 text-3xl font-extrabold tracking-tight text-foreground sm:text-4xl">
                             Học có phương pháp, tiến bộ có định hướng
                         </h2>
-                        <p className="mt-4 leading-7 text-slate-600">
+                        <p className="mt-4 leading-7 text-(--text)">
                             Kết hợp bài học, luyện tập và đánh giá để bạn hiểu rõ hơn về quá
                             trình học tiếng Anh của mình.
                         </p>
@@ -271,16 +273,16 @@ export default function HomePage() {
                             return (
                                 <Card
                                     key={feature.title}
-                                    className="border-slate-200 shadow-sm"
+                                    className="border-border shadow-sm"
                                 >
                                     <CardContent className="p-6">
-                                        <div className="inline-flex rounded-xl bg-blue-50 p-3 text-blue-600">
+                                        <div className="inline-flex rounded-xl bg-primary/10 p-3 text-primary">
                                             <Icon size={24} />
                                         </div>
-                                        <h3 className="mt-5 font-semibold text-slate-900">
+                                        <h3 className="mt-5 font-semibold text-foreground">
                                             {feature.title}
                                         </h3>
-                                        <p className="mt-2 text-sm leading-7 text-slate-600">
+                                        <p className="mt-2 text-sm leading-7 text-(--text)">
                                             {feature.description}
                                         </p>
                                     </CardContent>
@@ -293,24 +295,23 @@ export default function HomePage() {
 
             {/* Call to action */}
             <section className="px-4 pb-16 sm:px-6 sm:pb-20 lg:px-8">
-                <div className="mx-auto max-w-7xl overflow-hidden rounded-3xl bg-blue-600 px-6 py-12 text-white sm:px-12 sm:py-16">
+                <div className="mx-auto max-w-7xl overflow-hidden rounded-2xl bg-primary px-6 py-12 text-white sm:px-12 sm:py-16">
                     <div className="mx-auto max-w-3xl text-center">
-                        <h2 className="text-3xl font-bold tracking-tight text-white sm:text-4xl">
+                        <h2 className="text-3xl font-extrabold tracking-tight text-white sm:text-4xl">
                             Bắt đầu hành trình tiếng Anh của bạn hôm nay
                         </h2>
-                        <p className="mt-4 leading-7 text-blue-100">
+                        <p className="mt-4 leading-7 text-white/80">
                             Xác định mục tiêu, lựa chọn kỹ năng và từng bước tiến gần hơn đến
                             kết quả mong muốn.
                         </p>
 
                         <Link
                             to="/register"
-                            className="mt-8 inline-flex h-11 items-center justify-center gap-2 rounded-md bg-white px-6 text-sm font-medium text-blue-700 shadow-sm transition-colors hover:bg-blue-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-blue-600"
+                            className="mt-8 inline-flex h-12 items-center justify-center gap-2 rounded-lg bg-white px-6 text-[15px] font-bold text-primary shadow-sm transition-colors hover:bg-white/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-primary"
                         >
                             Tạo tài khoản
                             <ArrowRight size={18} />
                         </Link>
-
                     </div>
                 </div>
             </section>
